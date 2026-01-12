@@ -1,12 +1,20 @@
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
-import { PrismaClient } from "@prisma/client"
-import { readFile, utils } from "xlsx"
+import { PrismaPg } from "@prisma/adapter-pg"
+import XLSX from "xlsx"
+import { PrismaClient } from "../prisma/generated/prisma/client"
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
-const prisma = new PrismaClient()
+const connectionString = process.env.DATABASE_URL
+
+if (!connectionString) {
+  throw new Error("DATABASE_URL environment variable is required")
+}
+
+const adapter = new PrismaPg({ connectionString })
+const prisma = new PrismaClient({ adapter })
 
 interface ProductRow {
   ID?: string
@@ -100,12 +108,12 @@ const importProducts = async (): Promise<void> => {
 
     // Read Excel file
     const filePath = join(__dirname, "..", "products.xlsx")
-    const workbook = readFile(filePath)
+    const workbook = XLSX.readFile(filePath)
     const sheetName = workbook.SheetNames[0]
     const worksheet = workbook.Sheets[sheetName]
 
     // Convert to JSON
-    const data: ProductRow[] = utils.sheet_to_json(worksheet)
+    const data: ProductRow[] = XLSX.utils.sheet_to_json(worksheet)
 
     console.log(`📊 Found ${data.length} products in Excel file`)
 
