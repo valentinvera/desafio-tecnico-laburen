@@ -34,7 +34,6 @@ router.get(
         ]
       }
 
-      // Additional filters
       if (category) {
         where.category = { equals: category, mode: "insensitive" }
       }
@@ -70,7 +69,7 @@ router.get(
       })
     } catch (error) {
       console.error("Error fetching products:", error)
-      res.status(500).json({ error: "Error al obtener productos" })
+      res.status(500).json({ error: "Failed to fetch products" })
     }
   }
 )
@@ -88,7 +87,7 @@ router.get("/:id", async (req: Request<{ id: string }>, res: Response) => {
     })
 
     if (!product) {
-      return res.status(404).json({ error: "Producto no encontrado" })
+      return res.status(404).json({ error: "Product not found" })
     }
 
     res.json({
@@ -107,7 +106,7 @@ router.get("/:id", async (req: Request<{ id: string }>, res: Response) => {
     })
   } catch (error) {
     console.error("Error fetching product:", error)
-    res.status(500).json({ error: "Error al obtener producto" })
+    res.status(500).json({ error: "Failed to fetch product" })
   }
 })
 

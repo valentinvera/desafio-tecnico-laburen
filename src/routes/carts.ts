@@ -28,7 +28,7 @@ router.post(
       const { items, sessionId } = req.body
 
       if (!(items && Array.isArray(items)) || items.length === 0) {
-        return res.status(400).json({ error: "Se requiere un array de items" })
+        return res.status(400).json({ error: "Items array is required" })
       }
 
       // Validate all products exist
@@ -41,7 +41,7 @@ router.post(
         const foundIds = products.map((p) => p.id)
         const notFound = productIds.filter((id) => !foundIds.includes(id))
         return res.status(404).json({
-          error: "Algunos productos no existen",
+          error: "Some products do not exist",
           notFoundIds: notFound,
         })
       }
@@ -51,7 +51,7 @@ router.post(
         const product = products.find((p) => p.id === item.product_id)
         if (product && product.stock < item.qty) {
           return res.status(400).json({
-            error: `Stock insuficiente para ${product.name}`,
+            error: `Insufficient stock for ${product.name}`,
             product_id: product.id,
             available_stock: product.stock,
             requested: item.qty,
@@ -62,7 +62,7 @@ router.post(
       // Generate session ID if not provided
       const cartSessionId =
         sessionId ||
-        `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+        `session_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`
 
       // Check if cart already exists for this session
       let cart = await prisma.cart.findUnique({
@@ -118,10 +118,9 @@ router.post(
       })
 
       if (!updatedCart) {
-        return res.status(500).json({ error: "Error al crear carrito" })
+        return res.status(500).json({ error: "Failed to create cart" })
       }
 
-      // Calculate total
       const total = updatedCart.items.reduce((sum, item) => {
         return sum + item.product.price * item.qty
       }, 0)
@@ -145,7 +144,7 @@ router.post(
       })
     } catch (error) {
       console.error("Error creating cart:", error)
-      res.status(500).json({ error: "Error al crear carrito" })
+      res.status(500).json({ error: "Failed to create cart" })
     }
   }
 )
@@ -167,7 +166,7 @@ router.get("/:id", async (req: Request<{ id: string }>, res: Response) => {
     })
 
     if (!cart) {
-      return res.status(404).json({ error: "Carrito no encontrado" })
+      return res.status(404).json({ error: "Cart not found" })
     }
 
     const total = cart.items.reduce((sum, item) => {
@@ -193,7 +192,7 @@ router.get("/:id", async (req: Request<{ id: string }>, res: Response) => {
     })
   } catch (error) {
     console.error("Error fetching cart:", error)
-    res.status(500).json({ error: "Error al obtener carrito" })
+    res.status(500).json({ error: "Failed to fetch cart" })
   }
 })
 
@@ -209,7 +208,7 @@ router.patch(
       const { items } = req.body
 
       if (!(items && Array.isArray(items))) {
-        return res.status(400).json({ error: "Se requiere un array de items" })
+        return res.status(400).json({ error: "Items array is required" })
       }
 
       // Find cart
@@ -221,7 +220,7 @@ router.patch(
       })
 
       if (!cart) {
-        return res.status(404).json({ error: "Carrito no encontrado" })
+        return res.status(404).json({ error: "Cart not found" })
       }
 
       // Process each item update
@@ -244,14 +243,13 @@ router.patch(
             data: { qty: item.qty },
           })
         } else {
-          // Add new item
           const product = await prisma.product.findUnique({
             where: { id: item.product_id },
           })
 
           if (!product) {
             return res.status(404).json({
-              error: `Producto ${item.product_id} no encontrado`,
+              error: `Product ${item.product_id} not found`,
             })
           }
 
@@ -282,7 +280,7 @@ router.patch(
       })
 
       if (!updatedCart) {
-        return res.status(500).json({ error: "Error al actualizar carrito" })
+        return res.status(500).json({ error: "Failed to update cart" })
       }
 
       const total = updatedCart.items.reduce((sum, item) => {
@@ -308,7 +306,7 @@ router.patch(
       })
     } catch (error) {
       console.error("Error updating cart:", error)
-      res.status(500).json({ error: "Error al actualizar carrito" })
+      res.status(500).json({ error: "Failed to update cart" })
     }
   }
 )
@@ -325,17 +323,17 @@ router.delete("/:id", async (req: Request<{ id: string }>, res: Response) => {
     })
 
     if (!cart) {
-      return res.status(404).json({ error: "Carrito no encontrado" })
+      return res.status(404).json({ error: "Cart not found" })
     }
 
     await prisma.cart.delete({
       where: { id: cart.id },
     })
 
-    res.json({ message: "Carrito eliminado correctamente" })
+    res.json({ message: "Cart deleted successfully" })
   } catch (error) {
     console.error("Error deleting cart:", error)
-    res.status(500).json({ error: "Error al eliminar carrito" })
+    res.status(500).json({ error: "Failed to delete cart" })
   }
 })
 
