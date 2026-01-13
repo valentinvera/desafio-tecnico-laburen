@@ -6,27 +6,14 @@ services:
     startCommand: npm start
     envVars:
       - key: DATABASE_URL
-        fromDatabase:
-          name: laburen-db
-          property: connectionString
+        sync: false
       - key: GEMINI_API_KEY
         sync: false
-      - key: WHATSAPP_TOKEN
+      - key: TWILIO_ACCOUNT_SID
         sync: false
-      - key: WHATSAPP_PHONE_NUMBER_ID
+      - key: TWILIO_AUTH_TOKEN
         sync: false
-      - key: WHATSAPP_VERIFY_TOKEN
+      - key: TWILIO_WHATSAPP_NUMBER
         sync: false
-      - key: NODE_ENV
-        value: production
       - key: API_BASE_URL
-        fromService:
-          type: web
-          name: laburen-whatsapp-agent
-          property: url
-
-databases:
-  - name: laburen-db
-    databaseName: laburen
-    user: laburen_user
-    plan: free
+        sync: false

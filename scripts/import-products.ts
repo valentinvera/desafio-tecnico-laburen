@@ -10,7 +10,7 @@ const __dirname = dirname(__filename)
 const connectionString = process.env.DATABASE_URL
 
 if (!connectionString) {
-  throw new Error("DATABASE_URL environment variable is required")
+  throw new Error("the DATABASE_URL environment variable is not defined")
 }
 
 const adapter = new PrismaPg({ connectionString })
@@ -46,7 +46,7 @@ interface ProductRow {
   descripcion?: string
 }
 
-function parseProductRow(row: ProductRow) {
+const parseProductRow = (row: ProductRow) => {
   const externalId = String(row.ID || row["﻿ID"] || row.id || "").padStart(
     3,
     "0"
@@ -104,7 +104,7 @@ function parseProductRow(row: ProductRow) {
 
 const importProducts = async (): Promise<void> => {
   try {
-    console.log("📦 Starting product import...")
+    console.log("trying to import products...")
 
     // Read Excel file
     const filePath = join(__dirname, "..", "products.xlsx")
@@ -115,13 +115,13 @@ const importProducts = async (): Promise<void> => {
     // Convert to JSON
     const data: ProductRow[] = XLSX.utils.sheet_to_json(worksheet)
 
-    console.log(`📊 Found ${data.length} products in Excel file`)
+    console.log(`Found ${data.length} products in Excel file`)
 
     // Clear existing products
     await prisma.cartItem.deleteMany()
     await prisma.cart.deleteMany()
     await prisma.product.deleteMany()
-    console.log("🗑️  Cleared existing data")
+    console.log("Cleared existing data")
 
     // Import each product
     let imported = 0
@@ -129,6 +129,7 @@ const importProducts = async (): Promise<void> => {
 
     for (const row of data) {
       try {
+        // Parse row
         const productData = parseProductRow(row)
 
         await prisma.product.create({
@@ -137,11 +138,11 @@ const importProducts = async (): Promise<void> => {
 
         imported++
         if (imported % 20 === 0) {
-          console.log(`✅ Imported ${imported} products...`)
+          console.log(`Imported ${imported} products...`)
         }
       } catch (err) {
         console.error(
-          "❌ Error importing row:",
+          "Error importing row:",
           row,
           err instanceof Error ? err.message : err
         )
@@ -149,22 +150,21 @@ const importProducts = async (): Promise<void> => {
       }
     }
 
-    console.log("\n========================================")
-    console.log("✅ Import complete!")
-    console.log(`   Imported: ${imported} products`)
-    console.log(`   Errors: ${errors}`)
-    console.log("========================================\n")
+    console.log("Import complete!")
+    console.log(`Imported: ${imported} products`)
+    if (errors > 0) {
+      console.log(`Errors: ${errors}`)
+    }
 
     // Show sample of imported products
     const sample = await prisma.product.findMany({ take: 5 })
-    console.log("📋 Sample of imported products:")
     for (const p of sample) {
       console.log(
-        `   - [${p.externalId}] ${p.name} ${p.size} ${p.color} - $${p.price}`
+        `  - [${p.externalId}] ${p.name} ${p.size} ${p.color} - $${p.price}`
       )
     }
   } catch (error) {
-    console.error("❌ Import failed:", error)
+    console.error("Import failed:", error)
     process.exit(1)
   } finally {
     await prisma.$disconnect()

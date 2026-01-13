@@ -2,8 +2,9 @@
   "name": "desafio-tecnico-laburen",
   "version": "1.0.0",
   "description": "WhatsApp AI Agent for Laburen - Customer Success Engineer Technical Challenge",
-  "main": "src/index.ts",
+  "private": true,
   "type": "module",
+  "main": "src/index.ts",
   "engines": {
     "node": ">=18.0.0"
   },
@@ -16,7 +17,12 @@
     "db:push": "npx prisma db push",
     "db:migrate": "npx prisma migrate dev",
     "db:studio": "npx prisma studio",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "lint": "biome check",
+    "lint:fix": "biome format",
+    "check:ultracite": "bunx ultracite check",
+    "fix:ultracite": "bunx ultracite fix",
+    "prepare": "lefthook install"
   },
   "keywords": [
     "whatsapp",
@@ -43,6 +49,7 @@
     "@types/express": "^5.0.6",
     "@types/node": "^25.0.6",
     "@types/twilio": "^3.19.2",
+    "lefthook": "^2.0.15",
     "prisma": "^7.2.0",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",
