@@ -1,4 +1,4 @@
-const API_BASE = process.env.API_BASE_URL || "http://localhost:3000"
+const API_BASE = process.env.API_BASE_URL
 
 interface ToolDefinition {
   name: string
@@ -80,7 +80,7 @@ interface FunctionResult {
 /**
  * Tool definitions for Gemini function calling
  */
-export function getTools(): ToolDefinition[] {
+export const getTools = (): ToolDefinition[] => {
   return [
     {
       name: "searchProducts",
@@ -207,12 +207,12 @@ export function getTools(): ToolDefinition[] {
 /**
  * Execute a function call from Gemini
  */
-export async function executeFunction(
+export const executeFunction = async (
   name: string,
   args: Record<string, unknown>,
   sessionId: string
-): Promise<FunctionResult> {
-  console.log(`🔧 Executing function: ${name}`)
+): Promise<FunctionResult> => {
+  console.log(`Executing function: ${name}`)
 
   try {
     switch (name) {
@@ -248,12 +248,12 @@ export async function executeFunction(
 /**
  * Search products API call
  */
-async function searchProducts({
+export const searchProducts = async ({
   query,
   category,
   size,
   color,
-}: SearchProductsArgs): Promise<FunctionResult> {
+}: SearchProductsArgs): Promise<FunctionResult> => {
   const params = new URLSearchParams()
   if (query) {
     params.append("q", query)
@@ -300,7 +300,9 @@ async function searchProducts({
 /**
  * Get product details API call
  */
-async function getProductDetails(productId: number): Promise<FunctionResult> {
+export const getProductDetails = async (
+  productId: number
+): Promise<FunctionResult> => {
   const url = `${API_BASE}/products/${productId}`
   const response = await fetch(url)
 
@@ -328,10 +330,10 @@ async function getProductDetails(productId: number): Promise<FunctionResult> {
 /**
  * Create cart API call
  */
-async function createCart(
+export const createCart = async (
   items: CartItemArgs[],
   sessionId: string
-): Promise<FunctionResult> {
+): Promise<FunctionResult> => {
   const url = `${API_BASE}/carts`
   const response = await fetch(url, {
     method: "POST",
@@ -365,7 +367,7 @@ async function createCart(
 /**
  * Get cart API call
  */
-async function getCart(sessionId: string): Promise<FunctionResult> {
+export const getCart = async (sessionId: string): Promise<FunctionResult> => {
   const url = `${API_BASE}/carts/whatsapp_${sessionId}`
   const response = await fetch(url)
 
@@ -399,10 +401,10 @@ async function getCart(sessionId: string): Promise<FunctionResult> {
 /**
  * Update cart API call
  */
-async function updateCart(
+export const updateCart = async (
   items: CartItemArgs[],
   sessionId: string
-): Promise<FunctionResult> {
+): Promise<FunctionResult> => {
   const url = `${API_BASE}/carts/whatsapp_${sessionId}`
   const response = await fetch(url, {
     method: "PATCH",
@@ -431,7 +433,7 @@ async function updateCart(
 /**
  * Clear (delete) cart API call
  */
-async function clearCart(sessionId: string): Promise<FunctionResult> {
+export const clearCart = async (sessionId: string): Promise<FunctionResult> => {
   const url = `${API_BASE}/carts/whatsapp_${sessionId}`
   const response = await fetch(url, { method: "DELETE" })
 

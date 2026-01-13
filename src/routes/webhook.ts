@@ -5,7 +5,6 @@ import { processMessage } from "../agent"
 
 const router = Router()
 
-// Twilio client for sending messages
 const twilioClient = twilio(
   process.env.TWILIO_ACCOUNT_SID,
   process.env.TWILIO_AUTH_TOKEN
@@ -29,11 +28,11 @@ router.post("/", async (req: Request, res: Response) => {
     const messageText = Body || ""
 
     if (!(fromNumber && messageText)) {
-      console.log("📭 Empty message received, ignoring")
+      console.log("Empty message received, ignoring")
       return res.status(200).send()
     }
 
-    console.log(`📨 Message from ${fromNumber}: ${messageText}`)
+    console.log(`Message from ${fromNumber}: ${messageText}`)
 
     // Process message with AI agent
     const response = await processMessage(fromNumber, messageText)
@@ -41,7 +40,7 @@ router.post("/", async (req: Request, res: Response) => {
     // Send response back via Twilio
     await sendWhatsAppMessage(From, response)
 
-    console.log(`📤 Response sent to ${fromNumber}`)
+    console.log(`Response sent to ${fromNumber}`)
 
     // Respond to Twilio with empty TwiML (we send via API instead)
     res.set("Content-Type", "text/xml")
@@ -53,11 +52,13 @@ router.post("/", async (req: Request, res: Response) => {
 })
 
 // Send message via Twilio WhatsApp API
-async function sendWhatsAppMessage(to: string, text: string): Promise<void> {
+const sendWhatsAppMessage = async (to: string, text: string): Promise<void> => {
   const twilioWhatsAppNumber = process.env.TWILIO_WHATSAPP_NUMBER
 
   if (!twilioWhatsAppNumber) {
-    throw new Error("TWILIO_WHATSAPP_NUMBER not configured")
+    throw new Error(
+      "the TWILIO_WHATSAPP_NUMBER environment variable is not defined"
+    )
   }
 
   try {
@@ -67,7 +68,7 @@ async function sendWhatsAppMessage(to: string, text: string): Promise<void> {
       body: text,
     })
 
-    console.log(`✅ Message sent with SID: ${message.sid}`)
+    console.log(`Message sent with SID: ${message.sid}`)
   } catch (error) {
     console.error("Error sending WhatsApp message:", error)
     throw error

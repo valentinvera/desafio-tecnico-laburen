@@ -6,7 +6,6 @@ import {
 import { getSystemPrompt } from "./prompts"
 import { executeFunction, getTools } from "./tools"
 
-// Initialize Gemini
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "")
 
 // Store conversation history per session
@@ -18,22 +17,24 @@ interface SessionData {
 const conversationHistory = new Map<string, SessionData>()
 
 // Get or create session history
-function getSessionHistory(sessionId: string): SessionData {
+const getSessionHistory = (sessionId: string): SessionData => {
   const existing = conversationHistory.get(sessionId)
   if (existing) {
     return existing
   }
+
   const newSession: SessionData = {
     messages: [],
     lastActivity: Date.now(),
   }
+
   conversationHistory.set(sessionId, newSession)
   return newSession
 }
 
 // Clean old sessions (older than 24 hours)
-function cleanOldSessions(): void {
-  const maxAge = 24 * 60 * 60 * 1000 // 24 hours
+const cleanOldSessions = (): void => {
+  const maxAge = 24 * 60 * 60 * 1000
   const now = Date.now()
 
   for (const [sessionId, data] of conversationHistory.entries()) {
@@ -49,10 +50,10 @@ setInterval(cleanOldSessions, 60 * 60 * 1000)
 /**
  * Process an incoming message from WhatsApp
  */
-export async function processMessage(
+export const processMessage = async (
   from: string,
   message: string
-): Promise<string> {
+): Promise<string> => {
   try {
     // Get or create conversation history for this session
     const history = getSessionHistory(from)
@@ -88,7 +89,7 @@ export async function processMessage(
         break
       }
 
-      console.log(`🔧 Executing ${functionCalls.length} function(s)...`)
+      console.log(`Executing ${functionCalls.length} function(s)...`)
 
       // Execute all function calls
       const functionResponses: Array<{
@@ -125,7 +126,7 @@ export async function processMessage(
     history.messages = await chat.getHistory()
     history.lastActivity = Date.now()
 
-    console.log(`🤖 AI Response: ${textResponse.substring(0, 100)}...`)
+    console.log(`AI Response: ${textResponse.substring(0, 100)}...`)
 
     return textResponse
   } catch (error) {

@@ -1,7 +1,7 @@
 /**
  * System prompt for the sales AI agent
  */
-export function getSystemPrompt(sessionId: string): string {
+export const getSystemPrompt = (sessionId: string): string => {
   return `Eres un asistente de ventas amigable y profesional de Laburen, una tienda de ropa.
 
 ## Tu Personalidad

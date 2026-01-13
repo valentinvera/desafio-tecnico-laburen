@@ -7,12 +7,10 @@ import webhookRouter from "./routes/webhook"
 const app = express()
 const PORT = process.env.PORT || 3000
 
-// Middleware
 app.use(cors())
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
-// Routes
 app.use("/products", productsRouter)
 app.use("/carts", cartsRouter)
 app.use("/webhook", webhookRouter)
@@ -23,7 +21,7 @@ app.get("/", (_req, res) => {
     status: "ok",
     message: "Laburen WhatsApp AI Agent API",
     version: "1.0.0",
-    runtime: "Bun + TypeScript",
+    runtime: "Node.js + TypeScript",
     endpoints: {
       products: "/products",
       carts: "/carts",
@@ -43,13 +41,12 @@ app.use(
     console.error("Error:", err)
     res.status(500).json({
       error: "Internal Server Error",
-      message: process.env.NODE_ENV === "development" ? err.message : undefined,
+      message: err.message,
     })
   }
 )
 
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`)
-  console.log(`📱 WhatsApp webhook: http://localhost:${PORT}/webhook`)
-  console.log("⚡ Powered by Node.js + TypeScript")
+  console.log(`Server running on http://localhost:${PORT}`)
+  console.log(`WhatsApp webhook: http://localhost:${PORT}/webhook`)
 })
