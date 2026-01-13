@@ -7,3 +7,23 @@ pre-commit:
         - "*.json"
         - "*.jsonc"
       stage_fixed: true
+
+commit-msg:
+  jobs:
+    - name: validate-commit-message
+      run: |
+        commit_regex='^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\(.+\))?: .{1,}'
+        commit_msg=$(cat "{1}")
+        if ! echo "$commit_msg" | grep -qE "$commit_regex"; then
+          echo "❌ Invalid commit message format!"
+          echo ""
+          echo "Expected format: <type>(<scope>): <description>"
+          echo ""
+          echo "Types: feat, fix, docs, style, refactor, perf, test, build, ci, chore, revert"
+          echo ""
+          echo "Examples:"
+          echo "  feat: add new product search"
+          echo "  fix(cart): resolve total calculation bug"
+          echo "  docs: update README with API examples"
+          exit 1
+        fi
