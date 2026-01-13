@@ -12,13 +12,13 @@ flowchart TB
         WA[📱 WhatsApp]
     end
 
-    subgraph Meta["Meta Cloud Platform"]
-        WAAPI[WhatsApp Cloud API]
+    subgraph Twilio["Twilio Platform"]
+        WAAPI[WhatsApp Sandbox API]
     end
 
     subgraph Server["Servidor Node.js"]
         WH["/webhook\nEndpoint"]
-        AGENT["🤖 Agente IA\n(Gemini 1.5 Flash)"]
+        AGENT["🤖 Agente IA\n(Gemini 2.5 Flash)"]
         API["API REST"]
         
         subgraph Routes["Endpoints"]
@@ -34,7 +34,7 @@ flowchart TB
     end
 
     subgraph Database["Base de Datos"]
-        PG[(PostgreSQL)]
+        PG[(PostgreSQL\nNeon)]
         subgraph Tables
             T1["products"]
             T2["carts"]
@@ -48,20 +48,20 @@ flowchart TB
     AGENT <-->|Function Calling| GEMINI
     AGENT -->|HTTP Requests| API
     API --> Routes
-    Routes <-->|Prisma ORM| PG
+    Routes <-->|Prisma ORM v7| PG
     T2 --> T3
     T3 --> T1
 ```
 
 ## Componentes Principales
 
-### 1. WhatsApp Cloud API (Meta)
+### 1. Twilio WhatsApp Sandbox
 - **Función**: Recibe y envía mensajes de WhatsApp
-- **Webhook**: Notifica al servidor cuando llegan mensajes
-- **Formato**: JSON con estructura de mensajes estándar
+- **Webhook**: Notifica al servidor cuando llegan mensajes (POST urlencoded)
+- **Activación**: Enviar `join <code>` al número de sandbox
 
 ### 2. Servidor Node.js + Express
-- **Puerto**: 3000 (configurable)
+- **Puerto**: 4040 (configurable)
 - **Endpoints**:
   | Ruta | Método | Descripción |
   |------|--------|-------------|
@@ -70,10 +70,11 @@ flowchart TB
   | `/carts` | POST | Crear carrito |
   | `/carts/:id` | GET | Ver carrito |
   | `/carts/:id` | PATCH | Modificar carrito |
-  | `/webhook` | GET/POST | WhatsApp webhook |
+  | `/carts/:id` | DELETE | Eliminar carrito |
+  | `/webhook` | GET/POST | WhatsApp webhook (Twilio) |
 
 ### 3. Agente de IA (Gemini)
-- **Modelo**: Gemini 1.5 Flash
+- **Modelo**: Gemini 2.5 Flash
 - **Capacidades**: Function Calling nativo
 - **Herramientas disponibles**:
   - `searchProducts` - Buscar productos
@@ -83,15 +84,15 @@ flowchart TB
   - `updateCart` - Modificar carrito
   - `clearCart` - Vaciar carrito
 
-### 4. Base de Datos PostgreSQL
-- **ORM**: Prisma
+### 4. Base de Datos PostgreSQL (Neon)
+- **ORM**: Prisma v7 con driver adapter
 - **Tablas**: products, carts, cart_items
 - **Relaciones**: Cart → CartItems → Product
 
 ## Flujo de Datos
 
-1. **Cliente envía mensaje** → WhatsApp → Meta API → Webhook
-2. **Webhook procesa** → Extrae texto → Envía al agente
+1. **Cliente envía mensaje** → WhatsApp → Twilio API → Webhook
+2. **Webhook procesa** → Extrae texto (Body, From) → Envía al agente
 3. **Agente determina intención** → Llama funciones necesarias
-4. **Funciones consultan API** → API accede a PostgreSQL
-5. **Respuesta formateada** → Agente genera texto → Envía a cliente
+4. **Funciones consultan API** → API accede a PostgreSQL via Prisma
+5. **Respuesta formateada** → Agente genera texto → Twilio envía a cliente

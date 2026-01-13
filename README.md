@@ -7,22 +7,22 @@ Agente de inteligencia artificial para venta de productos por WhatsApp. Desarrol
 - **Runtime**: Node.js >= 18
 - **Lenguaje**: TypeScript
 - **Framework**: Express.js
-- **Base de datos**: PostgreSQL + Prisma ORM
-- **IA**: Google Gemini 1.5 Flash (function calling)
-- **Mensajería**: WhatsApp Cloud API (Meta)
+- **Base de datos**: PostgreSQL (Neon) + Prisma ORM v7
+- **IA**: Google Gemini 2.5 Flash (function calling)
+- **Mensajería**: Twilio WhatsApp Sandbox
 
 ## 📋 Requisitos
 
 - Node.js >= 18
-- PostgreSQL >= 13
+- PostgreSQL >= 13 (o cuenta en Neon.tech)
 - Cuenta de Google AI Studio (API key de Gemini)
-- Meta Business Account con WhatsApp Cloud API
+- Cuenta de Twilio (para WhatsApp Sandbox)
 
 ## ⚡ Instalación Rápida
 
 ```bash
 # 1. Clonar e instalar dependencias
-git clone <repo-url>
+git clone https://github.com/valentinvera/desafio-tecnico-laburen
 cd desafio-tecnico-laburen
 npm install
 
@@ -46,14 +46,21 @@ npm run dev
 Edita el archivo `.env` con tus credenciales:
 
 ```env
-DATABASE_URL="postgresql://user:password@localhost:5432/laburen"
+DATABASE_URL="postgresql://user:password@host:5432/database"
 GEMINI_API_KEY="tu-api-key-de-gemini"
-WHATSAPP_TOKEN="tu-token-de-whatsapp"
-WHATSAPP_PHONE_NUMBER_ID="tu-phone-id"
-WHATSAPP_VERIFY_TOKEN="un-token-secreto"
-PORT=3000
-API_BASE_URL="http://localhost:3000"
+TWILIO_ACCOUNT_SID="ACxxxxxxxxxxxxxxxxx"
+TWILIO_AUTH_TOKEN="tu-auth-token"
+TWILIO_WHATSAPP_NUMBER="whatsapp:+14155238886"
+PORT=4040
+API_BASE_URL="http://localhost:4040"
 ```
+
+## 📱 Configurar Twilio WhatsApp Sandbox
+
+1. Ir a [Twilio Console](https://console.twilio.com)
+2. Messaging → Try it out → Send a WhatsApp message
+3. En **Sandbox Settings**, configurar webhook: `https://tu-app.onrender.com/webhook`
+4. Para probar: enviar `join <code>` al número del sandbox
 
 ## 📡 API Endpoints
 
@@ -65,7 +72,7 @@ API_BASE_URL="http://localhost:3000"
 | GET | `/carts/:id` | Ver carrito |
 | PATCH | `/carts/:id` | Actualizar carrito |
 | DELETE | `/carts/:id` | Eliminar carrito |
-| GET/POST | `/webhook` | WhatsApp webhook |
+| GET/POST | `/webhook` | WhatsApp webhook (Twilio) |
 
 ## 📁 Estructura del Proyecto
 
@@ -74,7 +81,8 @@ API_BASE_URL="http://localhost:3000"
 │   ├── architecture.md      # Diagrama de arquitectura
 │   └── flow-diagram.md      # Flujo de conversación
 ├── prisma/
-│   └── schema.prisma        # Modelo de datos
+│   ├── schema.prisma        # Modelo de datos
+│   └── generated/           # Cliente Prisma generado
 ├── scripts/
 │   └── import-products.ts   # Importador de Excel
 ├── src/
@@ -82,12 +90,16 @@ API_BASE_URL="http://localhost:3000"
 │   │   ├── index.ts         # Agente principal (Gemini)
 │   │   ├── tools.ts         # Herramientas/funciones
 │   │   └── prompts.ts       # System prompt
+│   ├── lib/
+│   │   └── prisma.ts        # Cliente Prisma
 │   ├── routes/
 │   │   ├── products.ts      # API de productos
 │   │   ├── carts.ts         # API de carritos
-│   │   └── webhook.ts       # Webhook de WhatsApp
+│   │   └── webhook.ts       # Webhook de Twilio
 │   └── index.ts             # Servidor Express
 ├── products.xlsx            # Datos de productos
+├── lefthook.yml             # Git hooks config
+├── prisma.config.ts         # Prisma v7 config
 ├── render.yaml              # Blueprint para Render
 └── package.json
 ```
@@ -104,9 +116,11 @@ El agente puede:
 ## 🌐 Despliegue en Render
 
 1. Subir código a GitHub
-2. En Render → New → Blueprint
-3. Conectar repositorio (usará `render.yaml`)
-4. Configurar Environment Variables
+2. En Render → New → Web Service
+3. Conectar repositorio
+4. Build Command: `npm install && npx prisma generate`
+5. Start Command: `npm start`
+6. Configurar Environment Variables
 
 ## 📖 Documentación
 
